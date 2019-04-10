@@ -16,6 +16,7 @@ import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -26,9 +27,12 @@ public class PersonaFacadeREST {
 
     @Context
     private UriInfo context;
+    
+    
+    private final static Logger log = Logger.getLogger(PersonaFacadeREST.class);
 
     /**
-     * Creates a new instance of GenericResource
+     * Crea un nueva instancia de PersonaFacadeREST
      */
     public PersonaFacadeREST() {
     }
@@ -42,13 +46,18 @@ public class PersonaFacadeREST {
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response listarTodo() {
-        List<Persona> result = PersonaDelegate.listar();
-        if (result != null && !result.isEmpty()) {
-            GenericEntity<List<Persona>> list = new GenericEntity<List<Persona>>(result) {
-            };
-            return Response.status(Response.Status.OK).entity(list).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+        try {
+            List<Persona> result = PersonaDelegate.listar();
+            if (result != null && !result.isEmpty()) {
+                GenericEntity<List<Persona>> list = new GenericEntity<List<Persona>>(result) {
+                };
+                return Response.status(Response.Status.OK).entity(list).build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+            }
+        } catch (Exception ex) {
+            log.fatal(ex);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error interno").build();
         }
     }
 

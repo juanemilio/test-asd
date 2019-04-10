@@ -16,6 +16,7 @@ import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -27,8 +28,10 @@ public class AreaFacadeREST {
     @Context
     private UriInfo context;
 
+    private final static Logger log = Logger.getLogger(AreaFacadeREST.class);
+
     /**
-     * Creates a new instance of GenericResource
+     *  Crea un nueva instancia de AreaFacadeREST
      */
     public AreaFacadeREST() {
     }
@@ -42,13 +45,18 @@ public class AreaFacadeREST {
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response listarTodo() {
-        List<Area> result = AreaDelegate.listar();
-        if (result != null && !result.isEmpty()) {
-            GenericEntity<List<Area>> list = new GenericEntity<List<Area>>(result) {
-            };
-            return Response.status(Response.Status.OK).entity(list).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+        try {
+            List<Area> result = AreaDelegate.listar();
+            if (result != null && !result.isEmpty()) {
+                GenericEntity<List<Area>> list = new GenericEntity<List<Area>>(result) {
+                };
+                return Response.status(Response.Status.OK).entity(list).build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+            }
+        } catch (Exception ex) {
+            log.fatal(ex);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error interno").build();
         }
     }
 

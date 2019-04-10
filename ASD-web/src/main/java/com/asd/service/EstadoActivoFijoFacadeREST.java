@@ -16,6 +16,7 @@ import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -26,9 +27,11 @@ public class EstadoActivoFijoFacadeREST {
 
     @Context
     private UriInfo context;
+    
+    private final static Logger log = Logger.getLogger(EstadoActivoFijoFacadeREST.class);
 
     /**
-     * Creates a new instance of GenericResource
+     * Crea un nueva instancia de EstadoActivoFijoFacadeREST
      */
     public EstadoActivoFijoFacadeREST() {
     }
@@ -43,13 +46,18 @@ public class EstadoActivoFijoFacadeREST {
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response findAll() {
-        List<EstadoActivoFijo> result = EstadoActivoFijoDelegate.listar();
-        if (result != null && !result.isEmpty()) {
-            GenericEntity<List<EstadoActivoFijo>> list = new GenericEntity<List<EstadoActivoFijo>>(result) {
-            };
-            return Response.status(Response.Status.OK).entity(list).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+        try {
+            List<EstadoActivoFijo> result = EstadoActivoFijoDelegate.listar();
+            if (result != null && !result.isEmpty()) {
+                GenericEntity<List<EstadoActivoFijo>> list = new GenericEntity<List<EstadoActivoFijo>>(result) {
+                };
+                return Response.status(Response.Status.OK).entity(list).build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+            }
+        } catch (Exception ex) {
+            log.fatal(ex);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error interno").build();
         }
     }
 

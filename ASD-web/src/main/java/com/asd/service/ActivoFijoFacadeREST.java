@@ -7,8 +7,8 @@ package com.asd.service;
 
 import com.asd.entity.ActivoFijo;
 import com.asd.lookup.ActivoFijoDelegate;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -24,6 +24,7 @@ import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -36,8 +37,10 @@ public class ActivoFijoFacadeREST {
     @Context
     private UriInfo context;
 
+    private final static Logger log = Logger.getLogger(ActivoFijoFacadeREST.class);
+
     /**
-     * Creates a new instance of GenericResource
+     * Crea un nueva instancia de ActivoFijoFacadeREST
      */
     public ActivoFijoFacadeREST() {
     }
@@ -61,6 +64,7 @@ public class ActivoFijoFacadeREST {
                 ActivoFijoDelegate.crear(entity);
                 return Response.status(Response.Status.OK).entity("Registro creado").build();
             } catch (Exception ex) {
+                log.fatal(ex);
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error interno").build();
             }
         }
@@ -92,7 +96,7 @@ public class ActivoFijoFacadeREST {
                 ActivoFijoDelegate.editar(entity);
                 return Response.status(Response.Status.OK).entity("Registro editado").build();
             } catch (Exception ex) {
-                ex.printStackTrace();
+                log.fatal(ex);
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error interno").build();
             }
         }
@@ -108,14 +112,18 @@ public class ActivoFijoFacadeREST {
     @Path("/listartodo")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response listaTodo() {
-        List<ActivoFijo> result = ActivoFijoDelegate.listar();
-
-        if (result != null && !result.isEmpty()) {
-            GenericEntity<List<ActivoFijo>> list = new GenericEntity<List<ActivoFijo>>(result) {
-            };
-            return Response.status(Response.Status.OK).entity(list).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+        try {
+            List<ActivoFijo> result = ActivoFijoDelegate.listar();
+            if (result != null && !result.isEmpty()) {
+                GenericEntity<List<ActivoFijo>> list = new GenericEntity<List<ActivoFijo>>(result) {
+                };
+                return Response.status(Response.Status.OK).entity(list).build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+            }
+        } catch (Exception ex) {
+            log.fatal(ex);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error interno").build();
         }
     }
 
@@ -136,24 +144,29 @@ public class ActivoFijoFacadeREST {
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response find(@PathParam("tipo") Integer tipo, @PathParam("fechacompra") String fechaCompra,
             @PathParam("serial") String serial) {
-
-        Date fecha = null;
-        if (!fechaCompra.equalsIgnoreCase("null") && fechaCompra.trim().isEmpty()) {
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                fecha = sdf.parse(fechaCompra);
-            } catch (Exception ex) {
-                fecha = null;
+        try {
+            Date fecha = null;
+            if (!fechaCompra.equalsIgnoreCase("null") && fechaCompra.trim().isEmpty()) {
+                try {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    fecha = sdf.parse(fechaCompra);
+                } catch (ParseException ex) {
+                    log.fatal(ex);
+                    fecha = null;
+                }
             }
-        }
 
-        List<ActivoFijo> result = ActivoFijoDelegate.filtar(tipo, fecha, serial);
-        if (result != null && !result.isEmpty()) {
-            GenericEntity<List<ActivoFijo>> list = new GenericEntity<List<ActivoFijo>>(result) {
-            };
-            return Response.status(Response.Status.OK).entity(list).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+            List<ActivoFijo> result = ActivoFijoDelegate.filtar(tipo, fecha, serial);
+            if (result != null && !result.isEmpty()) {
+                GenericEntity<List<ActivoFijo>> list = new GenericEntity<List<ActivoFijo>>(result) {
+                };
+                return Response.status(Response.Status.OK).entity(list).build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+            }
+        } catch (Exception ex) {
+            log.fatal(ex);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error interno").build();
         }
     }
 

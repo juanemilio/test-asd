@@ -5,9 +5,7 @@
  */
 package com.asd.service;
 
-import com.asd.entity.EstadoActivoFijo;
 import com.asd.entity.TipoActivo;
-import com.asd.lookup.EstadoActivoFijoDelegate;
 import com.asd.lookup.TipoActivoDelegate;
 import java.util.List;
 import javax.ws.rs.GET;
@@ -18,6 +16,7 @@ import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -29,8 +28,9 @@ public class TipoActivoFacadeREST {
     @Context
     private UriInfo context;
 
+    private final static Logger log = Logger.getLogger(TipoActivoFacadeREST.class);
     /**
-     * Creates a new instance of GenericResource
+     * Crea un nueva instancia de TipoActivoFacadeREST
      */
     public TipoActivoFacadeREST() {
     }
@@ -46,13 +46,18 @@ public class TipoActivoFacadeREST {
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response findAll() {
-        List<TipoActivo> result = TipoActivoDelegate.listar();
-        if (result != null && !result.isEmpty()) {
-            GenericEntity<List<TipoActivo>> list = new GenericEntity<List<TipoActivo>>(result) {
-            };
-            return Response.status(Response.Status.OK).entity(list).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+        try {
+            List<TipoActivo> result = TipoActivoDelegate.listar();
+            if (result != null && !result.isEmpty()) {
+                GenericEntity<List<TipoActivo>> list = new GenericEntity<List<TipoActivo>>(result) {
+                };
+                return Response.status(Response.Status.OK).entity(list).build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND).entity("Sin resultados").build();
+            }
+        } catch (Exception ex) {
+            log.fatal(ex);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error interno").build();
         }
     }
 
